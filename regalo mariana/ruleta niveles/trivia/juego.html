@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Educativa</title>
+    <link rel="stylesheet" href="styles.css">
+    
+</head>
+<body>
+    <div class="container">
+        <!-- Página de inicio -->
+        <div id="home-screen" class="active">
+            <h1>¡Bienvenido a la Trivia Educativa!</h1>
+            <p>Selecciona una opción para comenzar:</p>
+            <button class="button" onclick="showSection('start-screen')">Trivia por Facultades</button>
+            <button class="button" onclick="showSection('general-screen')">Trivia de Cultura General</button>
+            <button class="button" onclick="showSection('unisimon-screen')">Trivia Unisimon</button>
+            <button class="button" onclick="showSection('random-faculty-screen')">Facultad Aleatoria</button>
+        </div>
+
+        <!-- Pantalla de selección de facultades -->
+        <div id="start-screen">
+            <h1>Trivia por Facultades</h1>
+            <p>¡Elige una facultad para comenzar!</p>
+            <button style="background-color: #ff8800;" class="button" onclick="startGame('Administración y Negocios')">Facultad de Administración y Negocios</button>
+            <button style="background-color: rgb(0, 221, 0);" class="button" onclick="startGame('Ciencias Básicas y Biomédicas')">Facultad de Ciencias Básicas y Biomédicas</button>
+            <button style="background-color: #ff0095;" class="button" onclick="startGame('Ciencias Jurídicas y Sociales')">Facultad de Ciencias Jurídicas y Sociales</button>
+            <button style="background-color: #00eeff;" class="button" onclick="startGame('Ciencias de la Salud')">Facultad de Ciencias de la Salud</button>
+            <button style="background-color: #ffee00;" class="button" onclick="startGame('Ingenierías')">Facultad de Ingenierías</button>
+            <button style="background-color: rgb(247, 51, 51);" class="button" onclick="showSection('home-screen')">Volver al Inicio</button>
+        </div>
+
+        <!-- Pantalla de selección de Trivia General -->
+        <div id="general-screen">
+            <h1>Trivia de Cultura General</h1>
+            <p>¡Prepárate para responder preguntas de cultura general!</p>
+            <button class="button" onclick="startGame('Cultura General')">Comenzar Trivia General</button>
+            <button style="background-color:rgb(247, 51, 51)" class="button" onclick="showSection('home-screen')">Volver al Inicio</button>
+        </div>
+
+        <!-- Pantalla de selección de Trivia Unisimon -->
+        <div id="unisimon-screen">
+            <h1>Trivia Unisimon</h1>
+            <p>¡Prepárate para responder preguntas sobre la Universidad Simón Bolívar!</p>
+            <button class="button" onclick="startGame('Unisimon')">Comenzar Trivia Unisimon</button>
+            <button style="background-color:rgb(247, 51, 51)" class="button" onclick="showSection('home-screen')">Volver al Inicio</button>
+        </div>
+
+        <!-- Pantalla de preguntas -->
+        <div id="question-screen">
+            <div id="timer" style="font-size: 20px; margin-bottom: 10px; color: red;"></div>
+            <div id="timer-container">
+                <svg id="timer-circle" width="100" height="100">
+                    <circle cx="50" cy="50" r="45" stroke="#ff0000" stroke-width="5" fill="none" />
+                    <circle id="timer-progress" cx="50" cy="50" r="45" stroke="#00ff00" stroke-width="5" fill="none" stroke-dasharray="283" stroke-dashoffset="0" />
+                </svg>
+                <div id="timer-text">10</div>
+            </div>
+            <h2 id="question"></h2>
+            <div id="answers"></div>
+            <button style="background-color: rgb(247, 51, 51);" id="back-button" class="button" onclick="goBackToStart()">Volver al inicio</button>
+        </div>
+
+        <!-- Pantalla de resultados -->
+        <div id="end-screen">
+            <h1>¡Hasta aquí llega el nivel!</h1>
+            <p id="end-message"></p>
+            <button class="button" onclick="goBackToStart()">Volver al inicio</button>
+        </div>
+
+        <!-- Sección de Facultad Aleatoria -->
+        <div id="random-faculty-screen">
+            <h1>Facultad Aleatoria</h1>
+            <p>¡Gira la ruleta para seleccionar una facultad!</p>
+            <div id="wheel-container">
+                <canvas id="wheel" width="300" height="300"></canvas>
+            </div>
+            <button class="button" onclick="spinWheel()">Girar Ruleta</button>
+            <p id="selected-faculty-message" style="font-size: 30px; font-weight: bold; margin-top: 20px; color: #000;"></p>
+            <button style="background-color:rgb(247, 51, 51)" class="button" onclick="showSection('home-screen')">Volver al Inicio</button>
+        </div>
+    </div>
+
+    
+</body>
+
+<script src="script2.js"></script>
+
+</html>

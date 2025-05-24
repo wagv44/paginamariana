@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensaje Romántico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1b3d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .spotify-player {
+            background: rgba(30, 215, 96, 0.1);
+            border: 2px solid #1DB954;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(29, 185, 84, 0.2);
+        }
+
+        .spotify-icon {
+            width: 60px;
+            height: 60px;
+            background: #1DB954;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .spotify-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.5);
+        }
+
+        .spotify-icon::before {
+            content: "♪";
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .song-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #1DB954;
+        }
+
+        .artist-name {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .play-button {
+            background: #1DB954;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            background: #1ed760;
+            transform: translateY(-2px);
+        }
+
+        .message-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-message {
+            font-size: 24px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e, #ffa8a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            margin: 40px 0;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .carousel-track {
+            display: flex;
+            width: 700%;
+            height: 100%;
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .carousel-slide {
+            width: calc(100% / 7);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.3s ease;
+        }
+
+        .carousel-slide:hover img {
+            transform: scale(1.05);
+        }
+
+        .carousel-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .nav-button:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-prev {
+            left: 10px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .nav-next {
+            right: 10px;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .sub-message {
+            font-size: 18px;
+            line-height: 1.8;
+            opacity: 0.9;
+            text-align: justify;
+        }
+
+        .hearts {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .heart {
+            position: absolute;
+            color: #ff6b6b;
+            font-size: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .audio-visualizer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            margin: 20px 0;
+        }
+
+        .bar {
+            width: 4px;
+            height: 20px;
+            background: #1DB954;
+            border-radius: 2px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .bar:nth-child(2) { animation-delay: 0.1s; }
+        .bar:nth-child(3) { animation-delay: 0.2s; }
+        .bar:nth-child(4) { animation-delay: 0.3s; }
+        .bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 100% { height: 20px; }
+            50% { height: 40px; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 900px;
+                padding: 15px;
+            }
+
+            .carousel-container {
+                height: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .spotify-player {
+                padding: 15px;
+                margin: 20px 0;
+            }
+
+            .message-section {
+                padding: 25px 20px;
+                margin: 20px 0;
+            }
+
+            .main-message {
+                font-size: 20px;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+
+            .sub-message {
+                font-size: 16px;
+                line-height: 1.6;
+            }
+
+            .carousel-container {
+                height: 400px;
+                margin: 30px 0;
+            }
+
+            .nav-button {
+                font-size: 20px;
+                padding: 12px 15px;
+            }
+
+            .nav-prev {
+                left: 5px;
+            }
+
+            .nav-next {
+                right: 5px;
+            }
+
+            .carousel-controls {
+                bottom: 15px;
+                padding: 8px 12px;
+            }
+
+            .carousel-dot {
+                width: 10px;
+                height: 10px;
+            }
+
+            .song-title {
+                font-size: 16px;
+            }
+
+            .artist-name {
+                font-size: 13px;
+            }
+
+            .play-button {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+
+            .spotify-icon {
+                width: 50px;
+                height: 50px;
+                margin-bottom: 10px;
+            }
+
+            .spotify-icon::before {
+                font-size: 20px;
+            }
+
+            .heart {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            .spotify-player {
+                padding: 12px;
+                margin: 15px 0;
+            }
+
+            .message-section {
+                padding: 20px 15px;
+                margin: 15px 0;
+            }
+
+            .main-message {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
+            .sub-message {
+                font-size: 15px;
+                line-height: 1.5;
+            }
+
+            .carousel-container {
+                height: 300px;
+                margin: 25px 0;
+            }
+
+            .nav-button {
+                font-size: 18px;
+                padding: 10px 12px;
+            }
+
+            .carousel-controls {
+                bottom: 10px;
+                padding: 6px 10px;
+            }
+
+            .carousel-dot {
+                width: 8px;
+                height: 8px;
+            }
+
+            .play-button {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+
+            .spotify-icon {
+                width: 45px;
+                height: 45px;
+            }
+
+            .spotify-icon::before {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .carousel-container {
+                height: 250px;
+            }
+
+            .main-message {
+                font-size: 16px;
+            }
+
+            .sub-message {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts" id="hearts"></div>
+    
+    <div class="container">
+        <section class="spotify-player">
+            <div class="spotify-icon" onclick="togglePlayer()"></div>
+            <div class="song-title">Tu Canción Especial</div>
+            <div class="artist-name">La música de nuestro amor</div>
+            <div class="audio-visualizer">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <button class="play-button" onclick="togglePlayer()">🎵 Abrir en Spotify</button>
+            
+            <!-- Spotify Embed Player optimizado -->
+            <div id="spotifyEmbed" style="margin-top: 20px;">
+                <iframe 
+                    src="https://open.spotify.com/embed/track/1PDP7mLiAMwhfmgIwzhOm2?utm_source=generator&theme=0" 
+                    width="100%" 
+                    height="152" 
+                    frameBorder="0" 
+                    allowfullscreen="" 
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                    loading="lazy"
+                    style="border-radius: 12px;">
+                </iframe>
+            </div>
+            
+            <!-- Mensaje de instrucción -->
+            <div style="text-align: center; margin-top: 10px; font-size: 14px; opacity: 0.8;">
+                👆 Haz clic en ▶️ para reproducir nuestra canción especial
+            </div>
+        </section>
+
+        <section class="message-section">
+            <h1 class="main-message">
+                Eres una de las personas mas importantes de mi vida, permiteme seguir a tu lado para hacer realidad esas cosas que nos prometimos en un momento, te amo desde hace casi 2 años, como no tienes idea
+                bendito sea ese 27 de septiembre de 2023, lo llevare por siempre en mi corazon, te amo Mariana, Te amo con todo mi alma, con mi ser, de aqui a andromeda con pasitos de tortuga.
+            </h1>
+        </section>
+
+        <div class="carousel-container">
+            <div class="carousel-track" id="carouselTrack">
+                <div class="carousel-slide">
+                    <img src="/img/img10.JPG" alt="Recuerdo 1">
+                </div>
+                <div class="carousel-slide">
+                    <img src="/img/img1.jpeg" alt="Recuerdo 2">
+                </div>
+                <div class="carousel-slide">
+                    <img src="/img/img12.JPG" alt="Recuerdo 3">
+                </div>
+                <div class="carousel-slide">
+                    <img src="/img/img13.jpeg" alt="Recuerdo 4">
+                </div>
+                <div class="carousel-slide">
+                    <img src="/img/img9.JPG" alt="Recuerdo 5">
+                </div>
+                <div class="carousel-slide">
+                    <img src="/img/img90.jpeg" alt="Recuerdo 6">
+                </div>
+                <div class="carousel-slide">
+                    <img src="/img/img8.JPG" alt="Recuerdo 7">
+                </div>
+            </div>
+            
+            <button class="nav-button nav-prev" onclick="previousSlide()">‹</button>
+            <button class="nav-button nav-next" onclick="nextSlide()">›</button>
+            
+            <div class="carousel-controls">
+                <span class="carousel-dot active" onclick="goToSlide(0)"></span>
+                <span class="carousel-dot" onclick="goToSlide(1)"></span>
+                <span class="carousel-dot" onclick="goToSlide(2)"></span>
+                <span class="carousel-dot" onclick="goToSlide(3)"></span>
+                <span class="carousel-dot" onclick="goToSlide(4)"></span>
+                <span class="carousel-dot" onclick="goToSlide(5)"></span>
+                <span class="carousel-dot" onclick="goToSlide(6)"></span>
+            </div>
+        </div>
+
+        <section class="message-section">
+            <p class="sub-message">
+                Que haría yo sin ti? sin ti perdería el rumbo de mi vida, tu eres esa razón por la cual me levanto y me haces seguir adelante, esa luz en mi vida, esa luz al final del túnel cuando tengo problemas, ese vaso de agua en el desierto, esa solecito, mi solecito...
+            </p>
+        </section>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 7;
+        let isPlaying = false;
+
+        function updateCarousel() {
+            const track = document.getElementById('carouselTrack');
+            const dots = document.querySelectorAll('.carousel-dot');
+            
+            track.style.transform = `translateX(-${currentSlide * (100/7)}%)`;
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateCarousel();
+        }
+
+        function previousSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateCarousel();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
+
+        function togglePlayer() {
+            openInSpotify();
+        }
+
+        // Función para abrir en Spotify (app o web)
+        function openInSpotify() {
+            // Intenta abrir en la app de Spotify primero, luego en web
+            const spotifyApp = 'spotify:track:1PDP7mLiAMwhfmgIwzhOm2';
+            const spotifyWeb = 'https://open.spotify.com/intl-es/track/1PDP7mLiAMwhfmgIwzhOm2?si=6f9a59834a4b4c5b';
+            
+            // Crear un enlace temporal para intentar abrir la app
+            const link = document.createElement('a');
+            link.href = spotifyApp;
+            link.click();
+            
+            // Si no se abre la app en 2 segundos, abrir en web
+            setTimeout(() => {
+                window.open(spotifyWeb, '_blank');
+            }, 2000);
+        }
+        
+        // Función para activar visualizador cuando el usuario interactúa
+        function activateVisualizer() {
+            const bars = document.querySelectorAll('.bar');
+            bars.forEach(bar => bar.style.animationPlayState = 'running');
+            isPlaying = true;
+            
+            showMusicNotification('🎵 ¡Disfruta la música! 💕');
+        }
+        
+        // Detectar cuando el usuario hace clic en el iframe de Spotify
+        function setupSpotifyInteraction() {
+            const iframe = document.querySelector('iframe');
+            let clickDetected = false;
+            
+            // Detectar cuando el usuario sale del iframe (posible clic)
+            window.addEventListener('blur', () => {
+                if (document.activeElement === iframe && !clickDetected) {
+                    clickDetected = true;
+                    setTimeout(activateVisualizer, 1000);
+                }
+            });
+        }
+
+        function showMusicNotification(message = '🎵 ¡Música reproduciéndose!') {
+            const notification = document.createElement('div');
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(29, 185, 84, 0.9);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                font-size: 14px;
+                z-index: 1001;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideIn 0.5s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.5s ease';
+                setTimeout(() => notification.remove(), 500);
+            }, 4000);
+        }
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerHTML = '💖';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            document.getElementById('hearts').appendChild(heart);
+            
+            setTimeout(() => {
+                heart.remove();
+            }, 5000);
+        }
+
+        // Auto-advance carousel
+        setInterval(nextSlide, 4000);
+
+        // Create hearts periodically
+        setInterval(createHeart, 2000);
+
+        // Initialize
+        updateCarousel();
+        setupSpotifyInteraction();
+        
+        // Mostrar mensaje de bienvenida
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                showMusicNotification('💕 Haz clic en ▶️ en Spotify para escuchar nuestra canción');
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

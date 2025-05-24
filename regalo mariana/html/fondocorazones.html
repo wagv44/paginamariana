@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Infinite hearts</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Container styles */
+        div {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Canvas responsive styles */
+        #testCanvas {
+            background-color: #000;
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            max-height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            touch-action: none;
+        }
+
+        /* Prevent text selection and touch behaviors */
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile specific optimizations */
+        @media screen and (max-width: 768px) {
+            #testCanvas {
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        /* Tablet optimizations */
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+            #testCanvas {
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+
+        /* Desktop optimizations */
+        @media screen and (min-width: 1025px) {
+            #testCanvas {
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+
+        /* Landscape mobile optimizations */
+        @media screen and (max-width: 768px) and (orientation: landscape) {
+            #testCanvas {
+                width: 100vw;
+                height: 100vh;
+            }
+        }
+
+        /* Loading indicator */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="loading" id="loading">Loading...</div>
+        <canvas id="testCanvas"></canvas>
+    </div>
+
+    <script src='https://code.createjs.com/1.0.0/easeljs.min.js'></script>
+    <script>
+        var canvas;
+        var stage;
+        var container;
+        var captureContainers;
+        var captureIndex;
+        var textElement;
+        var heartCount;
+        var captureCount;
+        var isInitialized = false;
+        var resizeTimeout;
+
+        function init() {
+            if (isInitialized) return;
+            
+            canvas = document.getElementById("testCanvas");
+            if (!canvas) return;
+            
+            stage = new createjs.Stage(canvas);
+            
+            // Set up responsive canvas
+            setupCanvas();
+            
+            // Add event listeners
+            window.addEventListener('resize', handleResize);
+            window.addEventListener('orientationchange', handleOrientationChange);
+            
+            // Create the scene
+            createScene();
+            
+            // Start animation
+            createjs.Ticker.timingMode = createjs.Ticker.RAF;
+            createjs.Ticker.on("tick", tick);
+            
+            // Hide loading indicator
+            var loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            
+            isInitialized = true;
+        }
+
+        function setupCanvas() {
+            var dpr = window.devicePixelRatio || 1;
+            var viewportWidth = window.innerWidth;
+            var viewportHeight = window.innerHeight;
+            
+            // Set canvas display size
+            canvas.style.width = viewportWidth + 'px';
+            canvas.style.height = viewportHeight + 'px';
+            
+            // Set actual canvas size (accounting for device pixel ratio)
+            canvas.width = viewportWidth * dpr;
+            canvas.height = viewportHeight * dpr;
+            
+            // Scale the drawing context for high DPI displays
+            var ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            
+            // Update stage scale if it exists
+            if (stage) {
+                stage.scaleX = stage.scaleY = dpr;
+            }
+        }
+
+        function createScene() {
+            var w = window.innerWidth;
+            var h = window.innerHeight;
+            
+            // Calculate optimal counts based on device capabilities
+            heartCount = getOptimalHeartCount();
+            captureCount = getOptimalCaptureCount();
+            
+            // Clear existing elements
+            if (container) {
+                stage.removeChild(container);
+            }
+            if (textElement) {
+                stage.removeChild(textElement);
+            }
+            
+            container = new createjs.Container();
+            stage.addChild(container);
+
+            captureContainers = [];
+            captureIndex = 0;
+
+            // Create hearts with responsive sizing
+            for (var i = 0; i < heartCount; i++) {
+                var heart = createHeart();
+                container.addChild(heart);
+            }
+
+            // Create responsive text
+            createText(w, h);
+
+            // Create capture containers
+            for (var i = 0; i < captureCount; i++) {
+                var captureContainer = new createjs.Container();
+                captureContainer.cache(0, 0, w, h);
+                captureContainers.push(captureContainer);
+            }
+        }
+
+        function createHeart() {
+            var heart = new createjs.Shape();
+            var hue = Math.random() * 30 - 45;
+            var lightness = 50 + Math.random() * 30;
+            
+            heart.graphics.beginFill(createjs.Graphics.getHSL(hue, 100, lightness));
+            
+            // Responsive heart size
+            var scale = getHeartScale();
+            var baseSize = 12;
+            
+            // Draw heart shape with responsive scaling
+            heart.graphics.moveTo(0, -baseSize * scale)
+                .curveTo(1 * scale, -20 * scale, 8 * scale, -20 * scale)
+                .curveTo(16 * scale, -20 * scale, 16 * scale, -10 * scale)
+                .curveTo(16 * scale, 0, 0, baseSize * scale);
+            heart.graphics.curveTo(-16 * scale, 0, -16 * scale, -10 * scale)
+                .curveTo(-16 * scale, -20 * scale, -8 * scale, -20 * scale)
+                .curveTo(-1 * scale, -20 * scale, 0, -baseSize * scale);
+            
+            heart.y = -100;
+            return heart;
+        }
+
+        function createText(w, h) {
+            if (textElement) {
+                stage.removeChild(textElement);
+            }
+            
+            var fontSize = getResponsiveFontSize();
+            var text = "the longer I'm with you\nthe more I love you";
+            
+            textElement = new createjs.Text(text, `bold ${fontSize}px Arial`, "#fff");
+            textElement.textAlign = "center";
+            textElement.textBaseline = "middle";
+            textElement.x = w / 2;
+            textElement.y = h / 2;
+            textElement.lineHeight = fontSize * 1.3;
+            
+            stage.addChild(textElement);
+        }
+
+        function getOptimalHeartCount() {
+            var w = window.innerWidth;
+            var h = window.innerHeight;
+            var area = w * h;
+            var isMobile = isMobileDevice();
+            var isLowEnd = isLowEndDevice();
+            
+            if (isLowEnd) {
+                return Math.min(30, Math.max(15, Math.floor(area / 20000)));
+            } else if (isMobile) {
+                return Math.min(60, Math.max(25, Math.floor(area / 15000)));
+            } else {
+                return Math.min(100, Math.max(40, Math.floor(area / 10000)));
+            }
+        }
+
+        function getOptimalCaptureCount() {
+            var isMobile = isMobileDevice();
+            var isLowEnd = isLowEndDevice();
+            
+            if (isLowEnd) return 30;
+            if (isMobile) return 60;
+            return 100;
+        }
+
+        function getHeartScale() {
+            var minDimension = Math.min(window.innerWidth, window.innerHeight);
+            var baseScale = minDimension / 800;
+            return Math.max(0.4, Math.min(1.8, baseScale));
+        }
+
+        function getResponsiveFontSize() {
+            var minDimension = Math.min(window.innerWidth, window.innerHeight);
+            var baseSize = minDimension / 25;
+            return Math.max(12, Math.min(36, baseSize));
+        }
+
+        function isMobileDevice() {
+            return window.innerWidth <= 768 || 
+                   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        function isLowEndDevice() {
+            return navigator.hardwareConcurrency <= 2 || 
+                   window.innerWidth <= 480 ||
+                   /Android.*Mobile|webOS|BlackBerry|IEMobile/i.test(navigator.userAgent);
+        }
+
+        function handleResize() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                if (!isInitialized) return;
+                
+                setupCanvas();
+                
+                var w = window.innerWidth;
+                var h = window.innerHeight;
+                
+                // Update text
+                createText(w, h);
+                
+                // Recreate capture containers
+                captureContainers = [];
+                captureCount = getOptimalCaptureCount();
+                for (var i = 0; i < captureCount; i++) {
+                    var captureContainer = new createjs.Container();
+                    captureContainer.cache(0, 0, w, h);
+                    captureContainers.push(captureContainer);
+                }
+                
+                // Reset off-screen hearts
+                if (container) {
+                    var l = container.numChildren;
+                    for (var i = 0; i < l; i++) {
+                        var heart = container.getChildAt(i);
+                        if (heart && (heart.y < -50 || heart.x < -50 || heart.x > w + 50)) {
+                            resetHeart(heart, w, h);
+                        }
+                    }
+                }
+            }, 150);
+        }
+
+        function handleOrientationChange() {
+            setTimeout(function() {
+                handleResize();
+            }, 100);
+        }
+
+        function resetHeart(heart, w, h) {
+            heart._x = Math.random() * w;
+            heart.y = h * (1 + Math.random()) + 50;
+            heart.perX = (1 + Math.random() * 2) * h;
+            heart.offX = Math.random() * h;
+            heart.ampX = heart.perX * 0.1 * (0.15 + Math.random());
+            heart.velY = -Math.random() * 2 - 1;
+            heart.scale = Math.random() * 2 + 1;
+            heart._rotation = Math.random() * 40 - 20;
+            heart.alpha = Math.random() * 0.75 + 0.05;
+            heart.compositeOperation = Math.random() < 0.33 ? "lighter" : "source-over";
+        }
+
+        function tick(event) {
+            if (!container || !captureContainers.length) return;
+            
+            var w = window.innerWidth;
+            var h = window.innerHeight;
+            var l = container.numChildren;
+
+            captureIndex = (captureIndex + 1) % captureContainers.length;
+            stage.removeChildAt(0);
+            var captureContainer = captureContainers[captureIndex];
+            stage.addChildAt(captureContainer, 0);
+            captureContainer.addChild(container);
+
+            for (var i = 0; i < l; i++) {
+                var heart = container.getChildAt(i);
+                if (!heart) continue;
+                
+                if (heart.y < -50) {
+                    resetHeart(heart, w, h);
+                }
+                
+                var int = (heart.offX + heart.y) / heart.perX * Math.PI * 2;
+                heart.y += heart.velY * heart.scaleX / 2;
+                heart.x = heart._x + Math.cos(int) * heart.ampX;
+                heart.rotation = heart._rotation + Math.sin(int) * 30;
+            }
+
+            captureContainer.updateCache("source-over");
+            stage.update(event);
+        }
+
+        // Initialize when everything is loaded
+        function startInit() {
+            if (typeof createjs !== 'undefined' && createjs.Stage) {
+                init();
+            } else {
+                setTimeout(startInit, 100);
+            }
+        }
+
+        // Start initialization
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startInit);
+        } else {
+            startInit();
+        }
+
+        // Prevent scrolling on mobile
+        document.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
